@@ -1,4 +1,14 @@
-// Inspired by Dom's office hours on 12/11/21
+// *****************************************************************
+// **
+// **   PLOT.LY HOMEWORK - BELLY BUTTON BIODIVERSITY
+// **
+// **       Author: George Alonzo
+// **     Due Date: December 18, 2021
+// **
+// **   NOTE: Inspired by Dom's office hours on 12/11/21, including
+// **      overall structure & bar char as a starting point
+// **
+// *****************************************************************
 
 
 
@@ -10,7 +20,7 @@
 
 function drawBarChart(sampleID){
 
-    d3.json("samples.json").then(data => {
+    d3.json("data/samples.json").then(data => {
 
         let samples = data.samples;
         let resultArray = samples.filter(s => s.id == sampleID);
@@ -34,7 +44,6 @@ function drawBarChart(sampleID){
         let barLayout = {
             title: "Top 10 Bateria Cultures Found",
             margin: {t: 30, l: 150}
-            // width: 700
         }
 
         Plotly.newPlot("bar", barArray, barLayout);
@@ -51,7 +60,7 @@ function drawBarChart(sampleID){
 // *****************************************************************
 function drawGaugeChart(sampleID){
 
-     d3.json("samples.json").then(data => {
+     d3.json("data/samples.json").then(data => {
 
         let metadata = data.metadata;
         let resultArray = metadata.filter(s => s.id == sampleID);
@@ -85,8 +94,6 @@ function drawGaugeChart(sampleID){
         let gaugeLayout = {
             title: "Belly Button Washing Frequency",
             margin: {t: 30, l: 150}
-            // width: 500
-            // paper_bgcolor: "lightgray",
         }
 
         Plotly.newPlot("gauge", gaugeArray, gaugeLayout);
@@ -100,29 +107,32 @@ function drawGaugeChart(sampleID){
 // **
 // *****************************************************************
 function displayDemoData(sampleID){
-    console.log(`Displaying Demographics For: (${sampleID})`);
 
-    var metaArray = [];
+    // SEE COMMENTS BELOW
+    // var metaArray = [];
 
-    d3.json("samples.json").then(data => {
+    d3.json("data/samples.json").then(data => {
 
         let metadata = data.metadata;
         let resultArray = metadata.filter(s => s.id == sampleID);
         let result = resultArray[0]
 
-        // FOR LOOP TO APPEND / WRITE DATA
         var d3Select = d3.select("#sample-metadata");
-    
+        
+        // Clear-out any existing demographic data from
+        //   a previously selected Subject ID.  Without this,
+        //   the demographics section keeps growing as a 
+        //   new Subject ID is selected.
+        d3.selectAll("p").remove()
+
         Object.entries(result).forEach(([k,v]) => {
-            console.log("IN LOOP")
             d3Select.append("p")
                     .text(`${k}: ${v}`)
         });
 
-
         // \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ \/ 
         // THE CODE BELOW WORKS, BUT WAS SIMPLIFIED IN OFFICE
-        //      HOURS WITH TA ERIN
+        //      HOURS WITH TA ERIN AND REPLACED W/ ABOVE CODE
         //
         // metaArray.push("ID: " + sampleID);
         // metaArray.push("AGE: " + result.age);
@@ -131,7 +141,7 @@ function displayDemoData(sampleID){
         // metaArray.push("GENDER: " + result.gender);
         // metaArray.push("LOCATION: " + result.location);
         // metaArray.push("WFREQ: " + result.wfreq);
-        //
+        
         // metaArray.forEach((k) => {
         //     d3Select.append("p")
         //             .text(k)
@@ -139,20 +149,6 @@ function displayDemoData(sampleID){
         // 
         // /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ /\ 
     });
-
-   
-
-    console.log("META ARRAY #3");
-    console.log(metaArray);
-
-    //  AREA IN HTML TO UPDATE/APPEND
-    // <div class="panel panel-primary">
-    //   <div class="panel-heading">
-    //     <h3 class="panel-title">Demographic Info</h3>
-    //    </div>
-    //    <div id="sample-metadata" class="panel-body"></div>
-    // </div>
-
 }
 
 
@@ -164,10 +160,7 @@ function displayDemoData(sampleID){
 
 function drawBubbleChart(sampleID){
 
-    d3.json("samples.json").then(data => {
-
-        // console.log("DATA");
-        // console.log(data);
+    d3.json("data/samples.json").then(data => {
 
         let samples = data.samples;
         let resultArray = samples.filter(s => s.id == sampleID);
@@ -177,9 +170,6 @@ function drawBubbleChart(sampleID){
         let otu_labels = result.otu_labels;
         let sample_values = result.sample_values;
         let yticks = otu_ids.slice(0,10).map(otuId => `OTU ${otuId}`).reverse();
-
-        // console.log("sample_values");
-        // console.log(sample_values);
 
         let bubbleData = {
             x: otu_ids,
@@ -201,31 +191,39 @@ function drawBubbleChart(sampleID){
             showlegend: false,
             height: 500,
             margin: {t: 30}
-            // width: 1000
         }
 
         Plotly.newPlot("bubble", bubbleArray, bubbleLayout);
     });
 }
 
+// ******************************************************************
+// ** Function to detect change in Subject ID, re-draw charts & demo
+// ******************************************************************
 function optionChanged(selectedValue){
-    console.log(`Selected Value: (${selectedValue})`);
+    // console.log(`Selected Value: (${selectedValue})`);
 
-    // Display bar chart
+    // Call function to display bar chart
     drawBarChart(selectedValue);
-    // Display gauge chart
+    
+    // Call function to display gauge chart
     drawGaugeChart(selectedValue);    
-    // Display the bubble chart
+    
+    // Call function to display the bubble chart
     drawBubbleChart(selectedValue);
-    // Populate demographic info
+    
+    // Call function to populate demographic info
     displayDemoData(selectedValue);
 }
 
+// ******************************************************************
+// ** Initialize dashboard for first ID upon initial load
+// ******************************************************************
 function InitDashboard(){
 
     let selector = d3.select("#selDataset");
 
-    d3.json("samples.json").then(data => {
+    d3.json("data/samples.json").then(data => {
 
         let sampleNames = data.names;
 
@@ -237,6 +235,7 @@ function InitDashboard(){
 
         // Grab first Test Subject ID in JSON dataset for initial load
         let sampleID = sampleNames[0];
+        
         // Draw charts for initial load
         drawBarChart(sampleID);
         drawGaugeChart(sampleID);
@@ -244,5 +243,6 @@ function InitDashboard(){
         displayDemoData(sampleID);
     });
 }
+
 
 InitDashboard();
